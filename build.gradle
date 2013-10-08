@@ -1,0 +1,50 @@
+apply from: "gradle/vertx.gradle"
+
+dependencies {
+}
+
+test {
+}
+
+repositories {
+  maven {
+    credentials {
+      username 'admin'
+      password 'We_1234'
+    }
+    url "http://maven.web-education.net:8081/nexus/content/groups/public"
+  }
+}
+
+def configurePom(def pom) {
+	pom.project {
+		description 'Http proxy for Vert.x'
+		inceptionYear '2013'
+		packaging 'zip'
+		url 'http://code.web-education.net/projects/http-proxy'
+
+		developers {
+			developer {
+				id 'dboissin'
+				name 'Damien BOISSIN'
+				email 'damien.boissin@web-educcation.net'
+			}
+		}
+
+		scm {
+			url 'git@code.web-education.net:vertx/http-proxy.git'
+		}
+
+		licenses {
+			license {
+				name 'GNU Affero General Public License, Version 2.0'
+				url 'https://www.gnu.org/licenses/agpl.txt'
+				distribution 'repo'
+			}
+		}
+
+		properties {
+			setProperty('project.build.sourceEncoding', 'UTF8')
+		}
+	}
+}
