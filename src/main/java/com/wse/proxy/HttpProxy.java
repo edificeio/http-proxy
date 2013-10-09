@@ -80,8 +80,11 @@ public class HttpProxy extends Verticle {
 		}
 	}
 
-	public static void forward(final HttpServerRequest request, HttpClient proxy) {
+	private void forward(final HttpServerRequest request, HttpClient proxy) {
 		String uri = request.uri();
+		if (uri.endsWith("%2F") || uri.endsWith("%2f")) {
+			uri = uri.substring(0, uri.length() - 3);
+		}
 		final HttpClientRequest proxyRequest = proxy.request(request.method(), uri,
 				new Handler<HttpClientResponse>() {
 					public void handle(HttpClientResponse cRes) {
@@ -101,7 +104,7 @@ public class HttpProxy extends Verticle {
 					}
 				});
 		proxyRequest.headers().set(request.headers());
-		proxyRequest.putHeader("Host", proxy.getHost());
+		proxyRequest.putHeader("X-Forwarded-Host", request.headers().get("Host"));
 		proxyRequest.putHeader("X-Forwarded-For", request.remoteAddress().getHostName());
 		proxyRequest.setChunked(true);
 		request.dataHandler(new Handler<Buffer>() {
