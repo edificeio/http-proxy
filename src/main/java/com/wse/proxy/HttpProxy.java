@@ -48,10 +48,11 @@ public class HttpProxy extends Verticle {
 				String prefix = path.substring(0, idx);
 				if (proxies.containsKey(prefix)) {
 					proxy = proxies.get(prefix);
-				} else if (proxies.containsKey("/")) {
-					proxy = proxies.get("/");
 				}
 			} else {
+				proxy = proxies.get(path);
+			}
+			if (proxy == null && proxies.containsKey("/")) {
 				proxy = proxies.get("/");
 			}
 		}
@@ -84,6 +85,10 @@ public class HttpProxy extends Verticle {
 		String uri = request.uri();
 		if (uri.endsWith("%2F") || uri.endsWith("%2f")) {
 			uri = uri.substring(0, uri.length() - 3);
+		}
+		if (container.logger().isDebugEnabled()) {
+			container.logger().debug(uri);
+			container.logger().debug(proxy.getHost() + ":" + proxy.getPort());
 		}
 		final HttpClientRequest proxyRequest = proxy.request(request.method(), uri,
 				new Handler<HttpClientResponse>() {
