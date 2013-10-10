@@ -1,8 +1,5 @@
 {
 	"main" : "com.wse.proxy.HttpProxy",
-	"port" : "80",
-	"proxies" : [
-	    { "location" : "/", "proxy_pass": "http://localhost:8017", "proxy_set_headers" : {}},
-	    { "location" : "/auth", "proxy_pass": "http://localhost:8009", "proxy_set_headers" : {}}
-	]
+	"port" : "8080",
+	"proxies" : []
 }
