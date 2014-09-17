@@ -1,5 +1,5 @@
 {
-	"main" : "com.wse.proxy.HttpProxy",
+	"main" : "fr.wseduc.proxy.HttpProxy",
 	"port" : "8080",
 	"proxies" : []
 }

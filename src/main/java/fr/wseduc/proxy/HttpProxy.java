@@ -1,4 +1,4 @@
-package com.wse.proxy;
+package fr.wseduc.proxy;
 
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.VoidHandler;
