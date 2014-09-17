@@ -8,27 +8,30 @@ test {
 
 def configurePom(def pom) {
 	pom.project {
+    name 'http-proxy'
 		description 'Http proxy for Vert.x'
 		inceptionYear '2013'
 		packaging 'zip'
-		url 'http://code.web-education.net/projects/http-proxy'
+		url 'https://github.com/web-education/http-proxy'
 
 		developers {
 			developer {
 				id 'dboissin'
 				name 'Damien BOISSIN'
-				email 'damien.boissin@web-educcation.net'
+				email 'damien.boissin@web-education.net'
 			}
 		}
 
 		scm {
-			url 'git@code.web-education.net:vertx/http-proxy.git'
+      connection 'scm:git:ssh://git@github.com:web-education/http-proxy.git'
+      developerConnection 'scm:git:ssh://git@github.com:web-education/http-proxy.git'
+      url 'https://github.com/web-education/http-proxy.git'
 		}
 
 		licenses {
 			license {
-				name 'GNU Affero General Public License, Version 2.0'
-				url 'https://www.gnu.org/licenses/agpl.txt'
+        name 'The Apache Software License, Version 2.0'
+        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
 				distribution 'repo'
 			}
 		}
