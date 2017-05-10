@@ -111,6 +111,7 @@ public class HttpProxy extends Verticle {
 					public void handle(HttpClientResponse cRes) {
 						request.response().setStatusCode(cRes.statusCode());
 						request.response().headers().set(cRes.headers());
+						request.response().headers().remove("Content-Length");
 						request.response().setChunked(true);
 						cRes.dataHandler(new Handler<Buffer>() {
 							public void handle(Buffer data) {
@@ -127,6 +128,7 @@ public class HttpProxy extends Verticle {
 		proxyRequest.headers().set(request.headers());
 		proxyRequest.putHeader("X-Forwarded-Host", request.headers().get("Host"));
 		proxyRequest.putHeader("X-Forwarded-For", request.remoteAddress().getHostName());
+		request.response().headers().remove("Content-Length");
 		proxyRequest.setChunked(true);
 		request.dataHandler(new Handler<Buffer>() {
 			public void handle(Buffer data) {
