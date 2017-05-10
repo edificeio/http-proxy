@@ -40,15 +40,15 @@ uploadArchives {
 
 	repositories {
 		mavenDeployer {
-      // setUniqueVersion(false)
+			// setUniqueVersion(false)
 
 			configuration = configurations.archives
 
-      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-        authentication(userName: sonatypeUsername, password: sonatypePassword)
-      }
-      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-        authentication(userName: sonatypeUsername, password: sonatypePassword)
+			repository(url: "http://maven.web-education.net/nexus/content/repositories/releases/") {
+				authentication(userName: sonatypeUsername, password: sonatypePassword)
+			}
+			snapshotRepository(url: "http://maven.web-education.net/nexus/content/repositories/snapshots/") {
+				authentication(userName: sonatypeUsername, password: sonatypePassword)
 			}
 
 			if (isReleaseVersion) {
