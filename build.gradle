@@ -1,11 +1,120 @@
-apply from: "gradle/vertx.gradle"
+plugins {
+  id 'java'
+  id 'scala'
+  id 'maven'
+  id 'maven-publish'
+  id 'com.github.johnrengelman.shadow' version '2.0.1'
+}
+
+repositories {
+  mavenLocal()
+    maven {
+      url "http://maven.web-education.net/nexus/content/repositories/releases/"
+    }
+  mavenCentral()
+    maven {
+      url "https://oss.sonatype.org/content/repositories/iovertx-3720/"
+    }
+}
+
+configurations {
+  provided
+    runtime.exclude module: 'vertx-core'
+}
+
+sourceSets {
+  main { compileClasspath += configurations.provided }
+}
+
+configurations.all {
+  resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+compileJava {
+  sourceCompatibility = project.sourceCompatibility
+    targetCompatibility = project.targetCompatibility
+}
+
+compileTestJava {
+  sourceCompatibility = project.sourceCompatibility
+    targetCompatibility = project.targetCompatibility
+}
 
 dependencies {
+  compileOnly "io.vertx:vertx-core:$vertxVersion"
+}
+
+jar {
+  manifest {
+    attributes(
+        "Main-Verticle": "service:mod"
+        )
+  }
+}
+
+shadowJar {
+  classifier = 'fat'
+    archiveName = "${modowner}~${modname}~$version-$classifier.$extension"
+    mergeServiceFiles {
+      include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+    }
+}
+
+publishing {
+  repositories {
+    if (version.endsWith("SNAPSHOT")) {
+      maven {
+        name 'Snapshots'
+          url 'https://maven.opendigitaleducation.com/nexus/content/repositories/snapshots/'
+          credentials {
+            username "${odeUsername}"
+              password "${odePassword}"
+          }
+      }
+    } else {
+      maven {
+        name 'Releases'
+          url 'https://maven.opendigitaleducation.com/nexus/content/repositories/releases/'
+          credentials {
+            username "${odeUsername}"
+              password "${odePassword}"
+          }
+      }
+    }
+  }
+  publications {
+    maven(MavenPublication) {
+      groupId "${modowner}"
+      artifact("build/libs/${modowner}~${modname}~$version-fat.jar") { classifier "fat" }
+    }
+  }
+}
+
+
+javadoc {
+  options.encoding = 'UTF-8'
+  classpath = configurations.provided
+  classpath += configurations.compile
 }
 
 test {
 }
 
-javadoc {
-    options.encoding = 'UTF-8'
+task testJar(type: Jar) {
+  classifier = 'tests'
+  from sourceSets.test.output
 }
+
+task deploymentJar(type: Jar) {
+  classifier = 'deployment'
+  from 'deployment'
+}
+
+artifacts {
+  archives testJar
+  archives deploymentJar
+}
+
