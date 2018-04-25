@@ -6,14 +6,24 @@ plugins {
   id 'com.github.johnrengelman.shadow' version '2.0.1'
 }
 
+if (!hasProperty('odeUsername')) {
+  ext.odeUsername = ''
+}
+if (!hasProperty('odePassword')) {
+  ext.odePassword = ''
+}
+
 repositories {
   mavenLocal()
     maven {
-      url "http://maven.web-education.net/nexus/content/repositories/releases/"
+      url "https://maven.opendigitaleducation.com/nexus/content/groups/public"
     }
   mavenCentral()
     maven {
       url "https://oss.sonatype.org/content/repositories/iovertx-3720/"
+    }
+    maven {
+      url "https://oss.sonatype.org/content/repositories/snapshots"
     }
 }
 
@@ -88,6 +98,7 @@ publishing {
   publications {
     maven(MavenPublication) {
       groupId "${modowner}"
+      artifactId "${modname}"
       artifact("build/libs/${modowner}~${modname}~$version-fat.jar") { classifier "fat" }
     }
   }
@@ -105,11 +116,13 @@ test {
 
 task testJar(type: Jar) {
   classifier = 'tests'
+  baseName = "${modname}"
   from sourceSets.test.output
 }
 
 task deploymentJar(type: Jar) {
   classifier = 'deployment'
+  baseName = "${modname}"
   from 'deployment'
 }
 
