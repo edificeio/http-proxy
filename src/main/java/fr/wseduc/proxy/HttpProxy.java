@@ -20,6 +20,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.*;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -33,12 +34,26 @@ public class HttpProxy extends AbstractVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(HttpProxy.class);
 	private final Map<String, HttpClient> proxies = new HashMap<>();
+	private HttpClient overrideApiProxy = null;
+	private String overrideApiHost = null;
+	private String overrideApiCookie = null;
+	private JsonArray overrideApiPaths = null;
 
 	@Override
 	public void start() throws Exception {
 		super.start();
 
 		loadProxies();
+
+		final JsonObject overrideApi = config().getJsonObject("override-api");
+		if (overrideApi != null) {
+			final String overrideApiUri = overrideApi.getString("uri");
+			if (overrideApiUri != null && !overrideApiUri.isEmpty()) {
+				overrideApiProxy = createProxy(new JsonObject().put("proxy_pass", overrideApiUri), true);
+				overrideApiCookie = overrideApi.getString("cookie");
+				overrideApiPaths = overrideApi.getJsonArray("paths");
+			}
+		}
 
 		vertx.createHttpServer().requestHandler(new Handler<HttpServerRequest>() {
 			@Override
@@ -57,21 +72,38 @@ public class HttpProxy extends AbstractVerticle {
 	private HttpClient findProxy(HttpServerRequest request) {
 		HttpClient proxy = null;
 		String path = request.path();
-		if (path != null && !path.trim().isEmpty()) {
-			int idx = path.indexOf('/', 1);
-			if (idx > 0) {
-				String prefix = path.substring(0, idx);
-				if (proxies.containsKey(prefix)) {
-					proxy = proxies.get(prefix);
+
+		if (overrideApiProxy != null && isOverridedPath(path)) {
+			proxy = overrideApiProxy;
+		} else {
+			if (path != null && !path.trim().isEmpty()) {
+				int idx = path.indexOf('/', 1);
+				if (idx > 0) {
+					String prefix = path.substring(0, idx);
+					if (proxies.containsKey(prefix)) {
+						proxy = proxies.get(prefix);
+					}
+				} else {
+					proxy = proxies.get(path);
 				}
-			} else {
-				proxy = proxies.get(path);
-			}
-			if (proxy == null && proxies.containsKey("/")) {
-				proxy = proxies.get("/");
+				if (proxy == null && proxies.containsKey("/")) {
+					proxy = proxies.get("/");
+				}
 			}
 		}
 		return proxy;
+	}
+
+	private boolean isOverridedPath(String path) {
+		if (path == null) {
+			return false;
+		}
+		for (Object o: overrideApiPaths) {
+			if (path.contains(o.toString())) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void loadProxies() {
@@ -82,19 +114,35 @@ public class HttpProxy extends AbstractVerticle {
 			JsonObject proxyConf = (JsonObject) o;
 			String location = proxyConf.getString("location");
 			try {
-				URI proxyPass = new URI(proxyConf.getString("proxy_pass"));
-				final HttpClientOptions options = new HttpClientOptions()
-						.setDefaultHost(proxyPass.getHost())
-						.setDefaultPort(proxyPass.getPort())
-						.setMaxPoolSize(config().getInteger("poolSize", 32))
-						.setKeepAlive(true)
-						.setConnectTimeout(config().getInteger("timeout", 10000));
-				HttpClient proxy = vertx.createHttpClient(options);
+				HttpClient proxy = createProxy(proxyConf);
 				proxies.put(location, proxy);
 			} catch (URISyntaxException e) {
 				log.error("Error when load proxy_pass.", e);
 			}
 		}
+	}
+
+	private HttpClient createProxy(JsonObject proxyConf) throws URISyntaxException {
+		return createProxy(proxyConf, false);
+	}
+
+	private HttpClient createProxy(JsonObject proxyConf, boolean override) throws URISyntaxException {
+		final URI proxyPass = new URI(proxyConf.getString("proxy_pass"));
+		final HttpClientOptions options = new HttpClientOptions()
+				.setDefaultHost(proxyPass.getHost())
+				.setDefaultPort(proxyPass.getPort())
+				.setSsl("https".equals(proxyPass.getScheme()))
+				.setMaxPoolSize(config().getInteger("poolSize", 32))
+				.setKeepAlive(true)
+				.setConnectTimeout(config().getInteger("timeout", 10000));
+		if ("https".equals(proxyPass.getScheme())) {
+			options.setForceSni(true);
+			// options.setKeyCertOptions(new DynamicCertOptions());
+		}
+		if (override) {
+			overrideApiHost = proxyPass.getHost();
+		}
+		return vertx.createHttpClient(options);
 	}
 
 	private void forward(final HttpServerRequest request, HttpClient proxy) {
@@ -128,6 +176,12 @@ public class HttpProxy extends AbstractVerticle {
 		proxyRequest.headers().addAll(request.headers());
 		proxyRequest.putHeader("X-Forwarded-Host", request.headers().get("Host"));
 		proxyRequest.putHeader("X-Forwarded-For", request.remoteAddress().host());
+		if (proxy == overrideApiProxy) {
+			log.info("Forward request : " + overrideApiHost + " - " + uri);
+			proxyRequest.putHeader("Host", overrideApiHost);
+			proxyRequest.putHeader("X-Forwarded-Host", overrideApiHost);
+			proxyRequest.putHeader("Cookie", overrideApiCookie);
+		}
 		request.response().headers().remove("Content-Length");
 		proxyRequest.setChunked(true);
 		request.handler(new Handler<Buffer>() {
