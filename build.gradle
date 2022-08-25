@@ -58,6 +58,7 @@ dependencies {
 }
 
 jar {
+  sourceSets.main.resources.srcDirs += [ "deployment" ]
   manifest {
     attributes(
         "Main-Verticle": "service:mod"

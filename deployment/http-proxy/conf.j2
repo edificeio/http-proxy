@@ -1,0 +1,197 @@
+{
+    "name": "{{ httpProxyVersion }}",
+    "config": {
+        "port": 8090,
+        "proxies": [
+            {
+            "location": "/",
+            "proxy_pass": "http://localhost:8017"
+            },
+            {
+            "location": "/infra",
+            "proxy_pass": "http://localhost:8001"
+            },
+            {
+            "location": "/directory",
+            "proxy_pass": "http://localhost:8003"
+            },
+            {
+            "location": "/auth",
+            "proxy_pass": "http://localhost:8009"
+            },
+            {
+            "location": "/workspace",
+            "proxy_pass": "http://localhost:8011"
+            },
+            {
+            "location": "/appregistry",
+            "proxy_pass": "http://localhost:8012"
+            },
+            {
+            "location": "/communication",
+            "proxy_pass": "http://localhost:8015"
+            },
+            {
+            "location": "/userbook",
+            "proxy_pass": "http://localhost:8003"
+            },
+            {
+            "location": "/conversation",
+            "proxy_pass": "http://localhost:8019"
+            },
+            {
+            "location": "/timeline",
+            "proxy_pass": "http://localhost:8016"
+            },
+            {
+            "location": "/cas",
+            "proxy_pass": "http://localhost:8023"
+            },
+            {
+            "location": "/archive",
+            "proxy_pass": "http://localhost:8004"
+            },
+            {
+            "location": "/admin",
+            "proxy_pass": "http://localhost:8089"
+            },
+            {
+            "location": "/blog",
+            "proxy_pass": "http://localhost:8018"
+            },
+            {
+            "location": "/searchengine",
+            "proxy_pass": "http://localhost:8053"
+            },
+            {
+            "location": "/crm",
+            "proxy_pass": "http://localhost:8064"
+            },
+            {
+            "location": "/viescolaire",
+            "proxy_pass": "http://localhost:8128"
+            },
+            {
+            "location": "/sharebigfiles",
+            "proxy_pass": "http://localhost:8052"
+            },
+            {
+            "location": "/schoolbook",
+            "proxy_pass": "http://localhost:8106"
+            },
+            {
+            "location": "/calendar",
+            "proxy_pass": "http://localhost:8098"
+            },
+            {
+            "location": "/scrap-book",
+            "proxy_pass": "http://localhost:8220"
+            },
+            {
+            "location": "/cns",
+            "proxy_pass": "http://localhost:8086"
+            },
+            {
+            "location": "/homeworks",
+            "proxy_pass": "http://localhost:8224"
+            },
+            {
+            "location": "/rack",
+            "proxy_pass": "http://localhost:8031"
+            },
+            {
+            "location": "/edt",
+            "proxy_pass": "http://localhost:8168"
+            },
+            {
+            "location": "/xiti",
+            "proxy_pass": "http://localhost:8049"
+            },
+            {
+            "location": "/community",
+            "proxy_pass": "http://localhost:8078"
+            },
+            {
+            "location": "/fake-sso",
+            "proxy_pass": "http://localhost:8041"
+            },
+            {
+            "location": "/wiki",
+            "proxy_pass": "http://localhost:8030"
+            },
+            {
+            "location": "/cursus",
+            "proxy_pass": "http://localhost:8085"
+            },
+            {
+            "location": "/actualites",
+            "proxy_pass": "http://localhost:8022"
+            },
+            {
+            "location": "/bookmark",
+            "proxy_pass": "http://localhost:8032"
+            },
+            {
+            "location": "/poll",
+            "proxy_pass": "http://localhost:8070"
+            },
+            {
+            "location": "/rss",
+            "proxy_pass": "http://localhost:8028"
+            },
+            {
+            "location": "/collaborativeeditor",
+            "proxy_pass": "http://localhost:8668"
+            },
+            {
+            "location": "/timelinegenerator",
+            "proxy_pass": "http://localhost:8099"
+            },
+            {
+            "location": "/pages",
+            "proxy_pass": "http://localhost:8025"
+            },
+            {
+            "location": "/collaborativewall",
+            "proxy_pass": "http://localhost:8071"
+            },
+            {
+            "location": "/exercizer",
+            "proxy_pass": "http://localhost:8105"
+            },
+            {
+            "location": "/forum",
+            "proxy_pass": "http://localhost:8024"
+            },
+            {
+            "location": "/stats",
+            "proxy_pass": "http://localhost:8225"
+            },
+            {
+            "location": "/maxicours",
+            "proxy_pass": "http://localhost:8040"
+            },
+            {
+            "location": "/support",
+            "proxy_pass": "http://localhost:8027"
+            },
+            {
+            "location": "/video",
+            "proxy_pass": "http://localhost:8058"
+            },
+            {
+            "location": "/rbs",
+            "proxy_pass": "http://localhost:8026"
+            },
+            {
+            "location": "/statistics",
+            "proxy_pass": "http://localhost:8042"
+            },
+            {
+            "location": "/website",
+            "proxy_pass": "http://localhost:8059"
+            } 
+            {{ httpProxyExtraRoutes }}      
+        ]
+    }
+}
