@@ -17,6 +17,7 @@
 package fr.wseduc.proxy;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.*;
@@ -51,6 +52,10 @@ public class HttpProxy extends AbstractVerticle {
 				}
 			}
 		}).listen(config().getInteger("port", 8000));
+
+		if (config().getJsonObject("bus-proxy") != null) {
+			vertx.deployVerticle(BusProxy.class, new DeploymentOptions().setConfig(config().getJsonObject("bus-proxy")));
+		}
 
 	}
 
