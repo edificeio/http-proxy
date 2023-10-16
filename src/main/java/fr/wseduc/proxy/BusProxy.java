@@ -39,6 +39,7 @@ public class BusProxy extends AbstractVerticle {
 	private static final Logger log = LoggerFactory.getLogger(BusProxy.class);
 	private EventBus eb;
 	private Set<String> allowedBusAddress = new HashSet<>();
+	private Set<String> allowedIPAddress = new HashSet<>();
 	private String basicString = UUID.randomUUID().toString();
 
 	@Override
@@ -49,12 +50,13 @@ public class BusProxy extends AbstractVerticle {
 		final JsonObject config = config();
 		basicString = "Basic " + config.getString("basic-authorization-header", UUID.randomUUID().toString());
 		allowedBusAddress = config.getJsonArray("allowed-bus-address").stream().map(x -> ((String) x)).collect(Collectors.toSet());
+		allowedIPAddress = config.getJsonArray("allowed-ip-address").stream().map(x -> ((String) x)).collect(Collectors.toSet());
 
 		vertx.createHttpServer().requestHandler(new Handler<HttpServerRequest>() {
 			@Override
 			public void handle(HttpServerRequest request) {
 				final String authHeader = request.headers().get("Authorization");
-				if (basicString.equals(authHeader)) {
+				if (allowedIPAddress.contains(request.remoteAddress().host()) && basicString.equals(authHeader)) {
 					forward(request);
 				} else {
 					request.response().setStatusCode(401).end();
