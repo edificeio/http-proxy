@@ -19,8 +19,11 @@ package fr.wseduc.proxy;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.*;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.RequestOptions;
+import io.vertx.core.http.impl.headers.HeadersMultiMap;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -111,40 +114,28 @@ public class HttpProxy extends AbstractVerticle {
 			log.debug(uri);
 			// log.debug(proxy.getHost() + ":" + proxy.getPort());
 		}
-		final HttpClientRequest proxyRequest = proxy.request(request.method(), uri,
-				new Handler<HttpClientResponse>() {
-					public void handle(HttpClientResponse cRes) {
+		request.pause();
+		proxy.request(new RequestOptions()
+						.setMethod(request.method())
+						.setURI(uri)
+						.setHeaders(new HeadersMultiMap()
+								.addAll(request.headers())
+								.add("X-Forwarded-Host", request.headers().get("Host"))
+								.add("X-Forwarded-For", request.remoteAddress().host())))
+				.map(proxyRequest -> proxyRequest.setChunked(true))
+				.onSuccess(proxyRequest -> {
+					request.response().headers().remove("Content-Length");
+					request.handler(data -> proxyRequest.write(data));
+					request.endHandler(v -> proxyRequest.send().onSuccess(cRes -> {
 						request.response().setStatusCode(cRes.statusCode());
 						request.response().headers().addAll(cRes.headers());
 						request.response().headers().remove("Content-Length");
 						request.response().setChunked(true);
-						cRes.handler(new Handler<Buffer>() {
-							public void handle(Buffer data) {
-								request.response().write(data);
-							}
-						});
-						cRes.endHandler(new Handler<Void>() {
-							public void handle(Void v) {
-								request.response().end();
-							}
-						});
-					}
+						cRes.handler(data -> request.response().write(data));
+						cRes.endHandler(v1 -> request.response().end());
+					}));
+					request.resume();
 				});
-		proxyRequest.headers().addAll(request.headers());
-		proxyRequest.putHeader("X-Forwarded-Host", request.headers().get("Host"));
-		proxyRequest.putHeader("X-Forwarded-For", request.remoteAddress().host());
-		request.response().headers().remove("Content-Length");
-		proxyRequest.setChunked(true);
-		request.handler(new Handler<Buffer>() {
-			public void handle(Buffer data) {
-				proxyRequest.write(data);
-			}
-		});
-		request.endHandler(new Handler<Void>() {
-			public void handle(Void v) {
-				proxyRequest.end();
-			}
-		});
 	}
 
 }
