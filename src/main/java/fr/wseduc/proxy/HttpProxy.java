@@ -114,6 +114,7 @@ public class HttpProxy extends AbstractVerticle {
 			log.debug(uri);
 			// log.debug(proxy.getHost() + ":" + proxy.getPort());
 		}
+		request.pause();
 		proxy.request(new RequestOptions()
 						.setMethod(request.method())
 						.setURI(uri)
@@ -133,6 +134,7 @@ public class HttpProxy extends AbstractVerticle {
 						cRes.handler(data -> request.response().write(data));
 						cRes.endHandler(v1 -> request.response().end());
 					}));
+					request.resume();
 				});
 	}
 
